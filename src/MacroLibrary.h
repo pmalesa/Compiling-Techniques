@@ -1,9 +1,12 @@
+#pragma once
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 class MacroLibrary
 {
+    friend class TestModule;
+    
 private:
     class MacroDefinition
     {

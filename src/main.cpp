@@ -2,9 +2,21 @@
 #include <fstream>
 
 #include "MacroGenerator.h"
+#include "TestModule.h"
+
+/* Comment this line to disable tests */
+#define RUN_TESTS
 
 int main(int argc, char* argv[])
 {
+    /* -------------------------------------TESTS-------------------------------------- */
+#ifdef RUN_TESTS
+    int testRetVal = TestModule::runTests();
+    if (testRetVal != 0)
+        return testRetVal;
+#endif
+
+    /* ------------------------------------PROGRAM------------------------------------- */
     if ( argc != 2 )
     {
         std::cout << "[ERROR] Inappropriate number of input arguments.\n"; 
@@ -29,6 +41,13 @@ int main(int argc, char* argv[])
     std::cout << "@RUNNING MACROGENERATOR\n";
     MacroGenerator mg;
     mg.run(contents);
+    
+    /* -------------------------------------------------------------------------------- */
+    
+
+
+
+
     
     std::string name = "MACRO";
     std::string body = "body_1 &1 body_2 &2";

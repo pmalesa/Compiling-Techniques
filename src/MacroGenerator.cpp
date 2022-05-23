@@ -1,5 +1,13 @@
 #include "MacroGenerator.h"
 
+#include <filesystem>
+#include <fstream>
+
+MacroGenerator::MacroGenerator() : outputFileName_("output.txt"), outputPath_("../output")
+{
+
+}
+
 void MacroGenerator::run(const std::string& textfile) /* TODO */
 {
     std::cout << "@INPUT:\n    '" << textfile << "'\n";
@@ -75,6 +83,7 @@ void MacroGenerator::run(const std::string& textfile) /* TODO */
     }
     
     std::cout << "@OUTPUT:\n    '" << output << "'\n";    
+    produceOutputFile(output);
 }
 
 int MacroGenerator::processMacroDefinition(const std::string& textfile, int& index)
@@ -85,4 +94,14 @@ int MacroGenerator::processMacroDefinition(const std::string& textfile, int& ind
 int MacroGenerator::processMacroCall(const std::string& textfile, int& index)
 {
     return 0;
+}
+
+void MacroGenerator::produceOutputFile(const std::string& contents)
+{
+    std::filesystem::path filepath = outputPath_ + "/" + outputFileName_;
+    if (!std::filesystem::is_directory(outputPath_))
+        std::filesystem::create_directory(outputPath_);
+    std::ofstream outfile(outputPath_ + "/" + outputFileName_);
+    outfile << contents;
+    outfile.close();
 }

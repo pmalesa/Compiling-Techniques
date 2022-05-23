@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.8)
 
 project(macrogenerator)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Platform specific variables
 if(WIN32)
@@ -22,17 +22,19 @@ message(STATUS "Target system: ${TARGET_SYSTEM}")
 set(MACROGENERATOR_MAIN_FILE "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
 set(MACROGENERATOR_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/MacroGenerator.h"
     "${CMAKE_CURRENT_LIST_DIR}/src/MacroGenerator.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/MacroGenerator.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/MacroLibrary.h"
     "${CMAKE_CURRENT_LIST_DIR}/src/MacroLibrary.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/MacroLibrary.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/TestModule.h"
+    "${CMAKE_CURRENT_LIST_DIR}/src/TestModule.cpp"
 
     # Add files here
 )
 
 set(LINKER_FLAGS)
 if(UNIX)
-    set(LINKER_FLAGS ${LINKER_FLAGS} "-pthread")
+    set(LINKER_FLAGS ${LINKER_FLAGS} "-pthread -lstdc++fs")
 endif()
 
 # Create main target

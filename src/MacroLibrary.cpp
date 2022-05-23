@@ -1,5 +1,7 @@
 #include "MacroLibrary.h"
 
+#include <iostream>
+
 int MacroLibrary::add(const std::string& macroName, const std::string& macroBody, int nParams)
 {
     /* Check if the number of parameters is at least two */
@@ -38,10 +40,10 @@ int MacroLibrary::add(const std::string& macroName, const std::string& macroBody
 
 std::pair<int, std::string> MacroLibrary::call(const std::string& macroName, const std::vector<std::string>& params)
 {
-    MacroDefinition& md = definitions_[macroName];
-    
     if ( !exists(macroName) )
         return { -1, "" }; // macro does not exist
+        
+    MacroDefinition& md = definitions_[macroName];
         
     if ( md.nParams > params.size() )
         return { -2, "" }; // too few arguments passed
@@ -66,16 +68,18 @@ std::pair<int, std::string> MacroLibrary::call(const std::string& macroName, con
         {
             /* Obtaining the parameter number */
             std::string parameterNumberStr = "";
-            for (std::size_t j = i++ + 1; j < md.body.size() && std::isdigit(md.body[j]) ; ++j, ++i )
-                parameterNumberStr.push_back(md.body[j]);
-
+            ++i;
+            while ( i < md.body.size() && std::isdigit(md.body[i]) )
+            {
+                parameterNumberStr.push_back(md.body[i]);
+                ++i;
+            }
             int parameterNumber = std::stoi(parameterNumberStr);
             if ( parameterNumber == 0 )
                 result.append(macroName);
             else                
                 result.append(processedParams[parameterNumber - 1]);
-        }
-        
+        } 
         result.push_back(md.body[i]);    
     }
     
