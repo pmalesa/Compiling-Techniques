@@ -27,44 +27,30 @@ int main(int argc, char* argv[])
     std::string contents;
     std::string line;
     std::ifstream file(filename);
+
     if ( !file.is_open() )
     {
         std::cout << "[ERROR] Unable to open '" << filename << "'.\n";
         return -2;
     }
-
-    while ( std::getline(file, line) )
-        contents.append(line);
-
+    char c;
+    while ( file.get(c) )
+        contents += c;
     file.close();
 
     std::cout << "@RUNNING MACROGENERATOR\n";
+    std::cout << "@INPUT:\n";
+    std::cout << "*---------------------------------------------*\n";
+    std::cout << contents << "\n";
+    std::cout << "*---------------------------------------------*\n\n";
+
     MacroGenerator mg;
-    mg.run(contents);
-    
-    /* -------------------------------------------------------------------------------- */
-    
+    std::string output = mg.process(contents);
 
-
-
-
-    
-    std::string name = "MACRO";
-    std::string body = "body_1 &1 body_2 &2";
-    int nParams = 3;
-    
-    MacroLibrary ml;
-    int status = ml.add(name, body, nParams);
-    std::cout << "Status: " << status << "\n";
-    
-    std::vector<std::string> params;
-    params.push_back("FIRST");
-    params.push_back("SECOND");
-    params.push_back("THIRD");
-    params.push_back("FOURTH");
-
-    std::pair<int, std::string> result = ml.call("MACRO", params);
-    std::cout << "Result: " << result.second << "\nStatus: " << result.first << "\n";
+    std::cout << "@OUTPUT:\n";
+    std::cout << "*---------------------------------------------*\n";
+    std::cout << output << "\n";
+    std::cout << "*---------------------------------------------*\n";
     
     return 0;
 }

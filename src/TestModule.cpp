@@ -19,12 +19,22 @@ int TestModule::runTests()
     testMacroLibraryClear();
     testMacroLibraryCall();
 
+    if (errorMessages_.empty())
+        std::cout << "MacroLibrary tests passed.\n";
+    else
+        std::cout << "MacroLibrary tests failed.\n";
+
+    testMacroGeneratorMacroExists();
+    testMacroGeneratorNumberOfParameters();
+    testMacroGeneratorMacroDefinition();
+    testMacroGeneratorMacroCall();
+    testMacroGeneratorOnlyFreeText();
     testMacroGeneratorEmptyInputFile();
-    testMacroGeneratorIllDefinedMacroDefinition();
-    testMacroGeneratorIllDefinedMacroCall();
 
-
-
+    if (errorMessages_.empty())
+        std::cout << "MacroGenerator tests passed.\n";
+    else
+        std::cout << "MacroGenerator tests failed.\n";
 
     if (errorMessages_.empty())
     {
@@ -47,7 +57,7 @@ void TestModule::testMacroLibraryAdd()
     std::string macroName = "MACRO_1";
     std::string macroBody = "body_1 &1 body_2 &2";
     int nParams = 3;
-    result ml.add(macroName, macroBody, nParams);
+    int result = ml.add(macroName, macroBody, nParams);
     MacroLibrary::MacroDefinition& definition = ml.definitions_["MACRO_1"];
 
     /* 1 */
@@ -71,12 +81,60 @@ void TestModule::testMacroLibraryAdd()
         errorMessages_.push(message);
     }
 
+    /* 4 */
+    macroName = "MACRO_2";
+    macroBody = "body_1 &1 body_2 &2";
+    nParams = 1;
+    result = ml.add(macroName, macroBody, nParams);
+    if (result != -1)
+    {
+        std::string message = "Failure in MacroLibrary::add(): Macro's number of parameters is fewer than two, and the proper error was not indicated.";
+        errorMessages_.push(message);    
+    }
 
+    /* 5 */
+    macroName = "MACRO_3";
+    macroBody = "body_1 $MACRO_2(A, B) &1 body_2 &2";
+    nParams = 3;
+    result = ml.add(macroName, macroBody, nParams);
+    if (result != -2)
+    {
+        std::string message = "Failure in MacroLibrary::add(): Nested macro call in a macro body, and the proper error was not indicated.";
+        errorMessages_.push(message);    
+    }
 
+    /* 6 */
+    macroName = "MACRO_4";
+    macroBody = "body_1 #MACRO_0(&1, &2, &3){body_1 &1 body_2 &2} &1 body_2 &2";
+    nParams = 3;
+    result = ml.add(macroName, macroBody, nParams);
+    if (result != -2)
+    {
+        std::string message = "Failure in MacroLibrary::add(): Nested macro definition in a macro body, and the proper error was not indicated.";
+        errorMessages_.push(message);    
+    }
 
+    /* 7 */
+    macroName = "MACRO_5";
+    macroBody = "body_1 & body_2 &2";
+    nParams = 3;
+    result = ml.add(macroName, macroBody, nParams);
+    if (result != -3)
+    {
+        std::string message = "Failure in MacroLibrary::add(): No number after parameter delimiter '&' in a macro body, and the proper error was not indicated.";
+        errorMessages_.push(message);    
+    }
 
-
-    
+    /* 8 */
+    macroName = "MACRO_6";
+    macroBody = "body_1 &4 body_2 &2";
+    nParams = 3;
+    result = ml.add(macroName, macroBody, nParams);
+    if (result != -4)
+    {
+        std::string message = "Failure in MacroLibrary::add(): Number after parameter delimiter '&' in a macro body is greater than the total number of parameters, and the proper error was not indicated.";
+        errorMessages_.push(message);    
+    }
 }
 
 void TestModule::testMacroLibraryExists()
@@ -87,6 +145,7 @@ void TestModule::testMacroLibraryExists()
     int nParams = 3;
     ml.add(macroName, macroBody, nParams);   
 
+    /* 1 */
     bool definitionExists = (ml.definitions_.find("MACRO_1") != ml.definitions_.end()); // definitionExists == true
     if (ml.exists("MACRO_1") != definitionExists)
     {
@@ -94,6 +153,7 @@ void TestModule::testMacroLibraryExists()
         errorMessages_.push(message);
     }
 
+    /* 2 */
     definitionExists = (ml.definitions_.find("MACRO_2") != ml.definitions_.end()); // definitionExists == false
     if (ml.exists("MACRO_2") != definitionExists)
     {
@@ -183,19 +243,82 @@ void TestModule::testMacroLibraryCall()
     }
 }
 
+void TestModule::testMacroGeneratorMacroExists()
+{
+    MacroGenerator mg;
+    std::string input = "#MACRO_2(&1, &2, &3)ABC$MACRO(X, Y, Z)DEF";
+    std::string correct = "ABCDEF";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result when calling a macro that was not defined.";
+        errorMessages_.push(message);   
+    }
+}
+
+void TestModule::testMacroGeneratorNumberOfParameters()
+{
+    MacroGenerator mg;
+    std::string input = "#MACRO(&1, &2, &3, &4)ABC$MACRO(X, Y, Z)DEF";
+    std::string correct = "ABCDEF";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result when calling a macro with too few parameters.";
+        errorMessages_.push(message);   
+    }
+}
+
+void TestModule::testMacroGeneratorMacroDefinition()
+{
+    MacroGenerator mg;
+    std::string input = "ABC#MACRO(&1, &2, &3,DEF GHI";
+    std::string correct = "ABCGHI";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with ill-defined macro.";
+        errorMessages_.push(message);   
+    }
+}
+
+void TestModule::testMacroGeneratorMacroCall()
+{
+    MacroGenerator mg;
+    std::string input = "#MACRO(&1, &2, &3){body_1 &1 body_2 &2}ABC$MACROX, Y, Z)DEF GHI";
+    std::string correct = "ABCGHI";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with ill-called macro.";
+        errorMessages_.push(message);   
+    }
+}
+
+void TestModule::testMacroGeneratorOnlyFreeText()
+{
+    MacroGenerator mg;
+    std::string input = "ABCDEF";
+    std::string correct = "ABCDEF";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result when called on a file containing only free text.";
+        errorMessages_.push(message);   
+    }
+}
+
 void TestModule::testMacroGeneratorEmptyInputFile()
 {
-    
-}
-
-void TestModule::testMacroGeneratorIllDefinedMacroDefinition()
-{
-    
-}
-
-void TestModule::testMacroGeneratorIllDefinedMacroCall()
-{
-    
+    MacroGenerator mg;
+    std::string input = "";
+    std::string correct = "";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result when called on an empty file.";
+        errorMessages_.push(message);   
+    }
 }
 
 void TestModule::clearErrorMessages()

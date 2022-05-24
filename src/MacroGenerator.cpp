@@ -8,19 +8,17 @@ MacroGenerator::MacroGenerator() : outputFileName_("output.txt"), outputPath_(".
 
 }
 
-void MacroGenerator::run(const std::string& textfile) /* TODO */
+std::string MacroGenerator::process(const std::string& contents)
 {
-    std::cout << "@INPUT:\n    '" << textfile << "'\n";
-    
     std::string output;
     output.reserve(512);
     
     /* Parsing the input text file */
-    for ( std::size_t i = 0; i < textfile.size(); ++i )
+    for ( std::size_t i = 0; i < contents.size(); ++i )
     {   
-        if ( textfile[i] == '#' ) // Add the found macro definition into the library
+        if ( contents[i] == '#' ) // Add the found macro definition into the library
         {
-            if ( (i + 1 <= textfile.size() && std::isspace(textfile[i + 1])) || i == textfile.size() - 1 )
+            if ( (i + 1 <= contents.size() && std::isspace(contents[i + 1])) || i == contents.size() - 1 )
             {
                 std::cout << "[ERROR] Found incomplete macro definition at position " << i << ".\n";
                 continue;
@@ -31,21 +29,21 @@ void MacroGenerator::run(const std::string& textfile) /* TODO */
             int nParams = 0;
             
             /* Obtaining the name of the macro */
-            for (std::size_t j = i + 1; j < textfile.size(); ++j )
+            for (std::size_t j = i + 1; j < contents.size(); ++j )
             {
-                if ( j == textfile.size() - 1 && textfile[j] != '(' )
+                if ( j == contents.size() - 1 && contents[j] != '(' )
                 {
                     std::cout << "[ERROR] Invalid macro definition at position " << i << "\n";
-                    return;    
+                    return "";    
                 }   
 
-                if ( std::isspace(textfile[j]) )
+                if ( std::isspace(contents[j]) )
                     break;
                 
-                if ( textfile[j] == '(' )
+                if ( contents[j] == '(' )
                     break;
                     
-                name.push_back(textfile[j]);
+                name.push_back(contents[j]);
             }
             
             if ( name.empty() )
@@ -63,9 +61,9 @@ void MacroGenerator::run(const std::string& textfile) /* TODO */
             
             
         }
-        else if ( textfile[i] == '$' ) // Search of the macro in the library
+        else if ( contents[i] == '$' ) // Search of the macro in the library
         {
-            if ( (i + 1 <= textfile.size() && std::isspace(textfile[i + 1])) || i == textfile.size() - 1 )
+            if ( (i + 1 <= contents.size() && std::isspace(contents[i + 1])) || i == contents.size() - 1 )
             {
                 std::cout << "[ERROR] Found incomplete macro call at position " << i << ".\n";
                 continue;
@@ -78,20 +76,19 @@ void MacroGenerator::run(const std::string& textfile) /* TODO */
         }
         else // Copy free text to the output
         {
-            output.push_back(textfile[i]);    
+            output.push_back(contents[i]);    
         }
     }
-    
-    std::cout << "@OUTPUT:\n    '" << output << "'\n";    
     produceOutputFile(output);
+    return output;
 }
 
-int MacroGenerator::processMacroDefinition(const std::string& textfile, int& index)
+int MacroGenerator::processMacroDefinition(const std::string& contents, int& index)
 {
     return 0;
 }
 
-int MacroGenerator::processMacroCall(const std::string& textfile, int& index)
+int MacroGenerator::processMacroCall(const std::string& contents, int& index)
 {
     return 0;
 }

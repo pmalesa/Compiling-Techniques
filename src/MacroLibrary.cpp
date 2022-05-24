@@ -1,7 +1,5 @@
 #include "MacroLibrary.h"
 
-#include <iostream>
-
 int MacroLibrary::add(const std::string& macroName, const std::string& macroBody, int nParams)
 {
     /* Check if the number of parameters is at least two */
