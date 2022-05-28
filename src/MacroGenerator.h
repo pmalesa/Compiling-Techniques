@@ -25,7 +25,7 @@ private:
     void skipUntilClosingParenthesisOrEOF(const std::string& contents, size_t& i);
     
     void produceOutputFile(const std::string& contents);
-    void clearLogFile();
+    void createLogFile();
     void appendToLogFile(const std::string& message);
 
     MacroLibrary library_;

@@ -11,6 +11,7 @@ MacroGenerator::MacroGenerator() : outputFileName_("output.txt"), outputPath_(".
 
 std::string MacroGenerator::process(const std::string& contents)
 {
+    createLogFile();
     std::string output;
     output.reserve(512);
     
@@ -47,7 +48,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
     /* Checking if there is a whitespace between a macro definition delimiter and the macro name or a macro delimiter is at the end of the file */
     if ((j < contents.size() && std::isspace(contents[j])) || j >= contents.size())
     {
-        std::cout << "[ERROR] Found incorrect macro definition at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found incorrect macro definition at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
         skipUntilClosingBracketOrEOF(contents, i);
         return;
     }
@@ -62,7 +65,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
         /* Whitespace in macro name found */
         if (std::isspace(contents[j]))
         {
-            std::cout << "[ERROR] Found incorrect macro definition at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found incorrect macro definition at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
@@ -70,7 +75,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
         /* Opening parenthesis not found */
         if (j == contents.size() - 1 && contents[j] != '(')
         {
-            std::cout << "[ERROR] Found incorrect macro definition at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found incorrect macro definition at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;    
         }   
@@ -80,7 +87,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
         {
             if (name.empty())
             {
-                std::cout << "[ERROR] Found macro definition without a specified macro name at position " << initial - 1 << ".\n";
+                std::string message = "[ERROR] Found macro definition without a specified macro name at position " + std::to_string(initial - 1) + ".";
+                std::cout << message << "\n";
+                appendToLogFile(message);
                 skipUntilClosingBracketOrEOF(contents, i);
                 return;
             } 
@@ -107,7 +116,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
 
         if (contents[j] != '&')
         {
-            std::cout << "[ERROR] Found macro definition with incorrectly defined parameters at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro definition with incorrectly defined parameters at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
@@ -115,7 +126,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
         ++j;
         if (j > contents.size() - 1 || !std::isdigit(contents[j]))
         {
-            std::cout << "[ERROR] Found macro definition with incorrectly defined parameters at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro definition with incorrectly defined parameters at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return; 
         }
@@ -124,26 +137,34 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
         int obtained_number = processMacroParameterNumber(contents, j, nextParameterNumber);
         if (obtained_number == -1)
         {
-            std::cout << "[ERROR] Found macro definition with wrong parameter number at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro definition with wrong parameter number at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
         else if (obtained_number == -2)
         {
-            std::cout << "[ERROR] Found macro definition with a parameter number containing non-digit characters at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro definition with a parameter number containing non-digit characters at position  " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
         else if (obtained_number == -3)
         {
-            std::cout << "[ERROR] Found incorrect macro definition at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found incorrect macro definition at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
         
         if (obtained_number != nextParameterNumber)
         {
-            std::cout << "[ERROR] Found macro definition with incorrect parameter number at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro definition with incorrect parameter number at position  " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;    
         }
@@ -157,8 +178,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
 
         if (j > contents.size() - 1 || (contents[j] != ',' && contents[j] != ')'))
         {
-            std::cout << "[ERROR] Found macro definition with incorrectly defined parameters at position " << initial - 1 << ".\n";
-            std::cout << j << std::endl;
+            std::string message = "[ERROR] Found macro definition with incorrectly defined parameters at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;  
         }
@@ -183,7 +205,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
 
     if (j > contents.size() - 1 || contents[j] != '{')
     {
-        std::cout << "[ERROR] Found macro definition with incorrectly defined body at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found macro definition with incorrectly defined body at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
         skipUntilClosingBracketOrEOF(contents, i);
         return;  
     }
@@ -194,7 +218,9 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
     {
         if (j == contents.size() - 1 && contents[j] != '}')
         {
-            std::cout << "[ERROR] Found macro definition with incorrectly defined body at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro definition with incorrectly defined body at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
@@ -218,19 +244,27 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
     int result = library_.add(name, body, nParams);
     if (result == -1)
     {
-        std::cout << "[ERROR] Found macro definition with fewer than two parameters at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found macro definition with fewer than two parameters at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
     }
     else if (result == -2)
     {
-        std::cout << "[ERROR] Found macro definition with a nested call or definition at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found macro definition with a nested call or definition at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
     }
     else if (result == -3)
     {
-        std::cout << "[ERROR] Found macro definition with incorrectly referenced parameter in the body at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found macro definition with incorrectly referenced parameter in the body at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
     }
     else if (result == -4)
     {
-        std::cout << "[ERROR] Found macro definition with wrong parameter number in the body at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found macro definition with wrong parameter number in the body at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
     }
 }
 
@@ -244,7 +278,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
 
     if ((j < contents.size() && std::isspace(contents[j])) || j >= contents.size())
     {
-        std::cout << "[ERROR] Found incorrect macro definition at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found incorrect macro definition at positionn " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
         skipUntilClosingBracketOrEOF(contents, i);
         return;
     }
@@ -258,7 +294,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
         /* Whitespace in macro name found */
         if (std::isspace(contents[j]))
         {
-            std::cout << "[ERROR] Found incorrect macro call at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found incorrect macro call at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingParenthesisOrEOF(contents, i);
             return;
         }
@@ -266,7 +304,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
         /* Opening parenthesis not found */
         if (j == contents.size() - 1 && contents[j] != '(')
         {
-            std::cout << "[ERROR] Found incorrect macro call at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found incorrect macro call at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingParenthesisOrEOF(contents, i);
             return;    
         }   
@@ -276,7 +316,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
         {
             if (name.empty())
             {
-                std::cout << "[ERROR] Found macro call without a specified macro name at position " << initial - 1 << ".\n";
+                std::string message = "[ERROR] Found macro call without a specified macro name at position " + std::to_string(initial - 1) + ".";
+                std::cout << message << "\n";
+                appendToLogFile(message);
                 skipUntilClosingParenthesisOrEOF(contents, i);
                 return;
             } 
@@ -301,7 +343,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
 
         if (j > contents.size() - 1)
         {
-            std::cout << "[ERROR] Found macro call with incorrectly passed arguments at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro call with incorrectly passed arguments at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingParenthesisOrEOF(contents, i);
             return; 
         }
@@ -310,7 +354,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
         std::string argument = processMacroArgument(contents, j);
         if (strcmp(argument.c_str(), "") == 0)
         {
-            std::cout << "[ERROR] Found macro call with incorrectly passed arguments at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro call with incorrectly passed arguments at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingParenthesisOrEOF(contents, i);
             return;
         }
@@ -322,7 +368,9 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
 
         if (j > contents.size() - 1 || (contents[j] != ',' && contents[j] != ')'))
         {
-            std::cout << "[ERROR] Found macro call with incorrectly passed arguments at position " << initial - 1 << ".\n";
+            std::string message = "[ERROR] Found macro call with incorrectly passed arguments at position " + std::to_string(initial - 1) + ".";
+            std::cout << message << "\n";
+            appendToLogFile(message);
             skipUntilClosingParenthesisOrEOF(contents, i);
             return;  
         }
@@ -348,12 +396,17 @@ void MacroGenerator::processMacroCall(const std::string& contents, size_t& i, st
     std::pair<int, std::string> result = library_.call(name, arguments);
     if (result.first == -1)
     {
-        std::cout << "[ERROR] Found macro call to a non-existent macro at position " << initial - 1 << ".\n";
+        std::string message = "[ERROR] Found macro call to a non-existent macro at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
         return;
     }
     else if (result.first == -2)
     {
-        std::cout << "[ERROR] Found macro call with too few arguments passed at position " << initial - 1 << ".\n";
+
+        std::string message = "[ERROR] Found macro call with too few arguments passed at position " + std::to_string(initial - 1) + ".";
+        std::cout << message << "\n";
+        appendToLogFile(message);
         return;
     }
     output.append(result.second);
@@ -439,18 +492,24 @@ void MacroGenerator::produceOutputFile(const std::string& contents)
     std::filesystem::path filepath = outputPath_ + "/" + outputFileName_;
     if (!std::filesystem::is_directory(outputPath_))
         std::filesystem::create_directory(outputPath_);
-    std::ofstream outfile(outputPath_ + "/" + outputFileName_);
+    std::ofstream outfile(filepath);
     outfile << contents;
     outfile.close();
 }
 
-void MacroGenerator::clearLogFile()
+void MacroGenerator::createLogFile()
 {
-
+    std::filesystem::path filepath = outputPath_ + "/" + logFileName_;
+    if (!std::filesystem::is_directory(outputPath_))
+        std::filesystem::create_directory(outputPath_);
+    std::ofstream outfile(filepath);
+    outfile.close();
 }
 
 void MacroGenerator::appendToLogFile(const std::string& message)
-{
-
-
+{  
+    std::filesystem::path filepath = outputPath_ + "/" + logFileName_;
+    std::ofstream outfile(filepath, std::ios_base::app);
+    outfile << message << '\n';
+    outfile.close();
 }
