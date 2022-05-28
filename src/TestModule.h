@@ -17,10 +17,12 @@ private:
     static void testMacroLibraryClear();
     static void testMacroLibraryCall();
 
-    static void testMacroGeneratorMacroExists();
+    static void testMacroGeneratorCallToNonDefinedMacro();
     static void testMacroGeneratorNumberOfParameters();
     static void testMacroGeneratorMacroDefinition();
     static void testMacroGeneratorMacroCall();
+    static void testMacroGeneratorIncorrectMacroDefinition();
+    static void testMacroGeneratorIncorrectMacroCall();
     static void testMacroGeneratorOnlyFreeText();
     static void testMacroGeneratorEmptyInputFile();
 

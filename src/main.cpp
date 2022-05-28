@@ -12,8 +12,8 @@ int main(int argc, char* argv[])
     /* -------------------------------------TESTS-------------------------------------- */
 #ifdef RUN_TESTS
     int testRetVal = TestModule::runTests();
-    if (testRetVal != 0)
-        return testRetVal;
+    // if (testRetVal != 0)
+    //     return testRetVal;
 #endif
 
     /* ------------------------------------PROGRAM------------------------------------- */
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     MacroGenerator mg;
     std::string output = mg.process(contents);
 
-    std::cout << "@OUTPUT:\n";
+    std::cout << "\n@OUTPUT:\n";
     std::cout << "*---------------------------------------------*\n";
     std::cout << output << "\n";
     std::cout << "*---------------------------------------------*\n";

@@ -15,13 +15,21 @@ public:
     std::string process(const std::string& contents);
 
 private:
-    int processMacroDefinition(const std::string& textfile, int& index);    /* Returns an error code if one occurs */
-    int processMacroCall(const std::string& textfile, int& index);  /* Returns an error code if one occurs */
-    int processMacroParameter(const std::string& textfile, int& index); /* Returns -1 if the string until next white space is not a number */
+    void processMacroDefinition(const std::string& contents, size_t& i);
+    void processMacroCall(const std::string& contents, size_t& i, std::string& output);
+
+    int processMacroParameterNumber(const std::string& contents, size_t& i, int nextParameterNumber);  /* Returns a number that is after a parameter delimiter & as an integer, -1 if there is an error */
+    std::string processMacroArgument(const std::string& contents, size_t& i);
+
+    void skipUntilClosingBracketOrEOF(const std::string& contents, size_t& i);
+    void skipUntilClosingParenthesisOrEOF(const std::string& contents, size_t& i);
     
     void produceOutputFile(const std::string& contents);
+    void clearLogFile();
+    void appendToLogFile(const std::string& message);
 
     MacroLibrary library_;
     std::string outputFileName_;
     std::string outputPath_;
+    std::string logFileName_;
 };

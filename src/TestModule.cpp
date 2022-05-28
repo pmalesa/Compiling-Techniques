@@ -24,10 +24,12 @@ int TestModule::runTests()
     else
         std::cout << "MacroLibrary tests failed.\n";
 
-    testMacroGeneratorMacroExists();
+    testMacroGeneratorCallToNonDefinedMacro();
     testMacroGeneratorNumberOfParameters();
     testMacroGeneratorMacroDefinition();
     testMacroGeneratorMacroCall();
+    testMacroGeneratorIncorrectMacroDefinition();
+    testMacroGeneratorIncorrectMacroCall();
     testMacroGeneratorOnlyFreeText();
     testMacroGeneratorEmptyInputFile();
 
@@ -39,14 +41,16 @@ int TestModule::runTests()
     if (errorMessages_.empty())
     {
         std::cout << "All tests passed.\n";
-        std::cout << "*---------------------------------------------*\n\n";
+        std::cout << "*------------------------------------------------------------------------------------------*\n";
+        std::cout << "*------------------------------------------------------------------------------------------*\n\n";
         return 0;
     }
     else
     {
         std::cout << "Tests failed.\n";
         printErrorMessages();
-        std::cout << "*---------------------------------------------*\n\n";
+        std::cout << "*------------------------------------------------------------------------------------------*\n";
+        std::cout << "*------------------------------------------------------------------------------------------*\n\n";
         return -1;
     }
 }
@@ -61,14 +65,14 @@ void TestModule::testMacroLibraryAdd()
     MacroLibrary::MacroDefinition& definition = ml.definitions_["MACRO_1"];
 
     /* 1 */
-    if (definition.name != "MACRO_1")
+    if (strcmp(definition.name.c_str(), "MACRO_1") != 0)
     {
         std::string message = "Failure in MacroLibrary::add(): Macro name saved incorrectly.";
         errorMessages_.push(message);
     }
     
     /* 2 */
-    if (definition.body != "body_1 &1 body_2 &2")
+    if (strcmp(definition.body.c_str(), "body_1 &1 body_2 &2") != 0)
     {
         std::string message = "Failure in MacroLibrary::add(): Macro body saved incorrectly.";
         errorMessages_.push(message);
@@ -243,10 +247,10 @@ void TestModule::testMacroLibraryCall()
     }
 }
 
-void TestModule::testMacroGeneratorMacroExists()
+void TestModule::testMacroGeneratorCallToNonDefinedMacro()
 {
     MacroGenerator mg;
-    std::string input = "#MACRO_2(&1, &2, &3)ABC$MACRO(X, Y, Z)DEF";
+    std::string input = "ABC$MACRO(X, Y, Z)DEF";
     std::string correct = "ABCDEF";
     std::string output = mg.process(input);
     if (strcmp(output.c_str(), correct.c_str()) != 0)
@@ -259,7 +263,7 @@ void TestModule::testMacroGeneratorMacroExists()
 void TestModule::testMacroGeneratorNumberOfParameters()
 {
     MacroGenerator mg;
-    std::string input = "#MACRO(&1, &2, &3, &4)ABC$MACRO(X, Y, Z)DEF";
+    std::string input = "#MACRO(&1, &2, &3, &4){body_1 &1 body_2 &2}ABC$MACRO(X, Y, Z)DEF";
     std::string correct = "ABCDEF";
     std::string output = mg.process(input);
     if (strcmp(output.c_str(), correct.c_str()) != 0)
@@ -272,12 +276,37 @@ void TestModule::testMacroGeneratorNumberOfParameters()
 void TestModule::testMacroGeneratorMacroDefinition()
 {
     MacroGenerator mg;
-    std::string input = "ABC#MACRO(&1, &2, &3,DEF GHI";
-    std::string correct = "ABCGHI";
+    std::string input = "ABC#MACRO(&1, &2, &3){body_1 &1 body_2 &2}DEF";
+    std::string correct = "ABCDEF";
     std::string output = mg.process(input);
+
+    /* 1 */
     if (strcmp(output.c_str(), correct.c_str()) != 0)
     {
-        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with ill-defined macro.";
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with a correctly defined macro.";
+        errorMessages_.push(message);   
+    }
+
+    /* 2 */
+    if (mg.library_.definitions_.find("MACRO") == mg.library_.definitions_.end())
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong macro name obtained from a correctly defined macro.";
+        errorMessages_.push(message);   
+    }
+
+    MacroLibrary::MacroDefinition& md = mg.library_.definitions_["MACRO"];
+
+    /* 3 */
+    if (md.nParams != 3)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong number of parameters obtained from a correctly defined macro.";
+        errorMessages_.push(message);   
+    }
+
+    /* 4 */
+    if (strcmp(md.body.c_str(), "body_1 &1 body_2 &2") != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong macro body obtained from a correctly defined macro.";
         errorMessages_.push(message);   
     }
 }
@@ -285,12 +314,38 @@ void TestModule::testMacroGeneratorMacroDefinition()
 void TestModule::testMacroGeneratorMacroCall()
 {
     MacroGenerator mg;
-    std::string input = "#MACRO(&1, &2, &3){body_1 &1 body_2 &2}ABC$MACROX, Y, Z)DEF GHI";
-    std::string correct = "ABCGHI";
+    std::string input = "#MACRO(&1, &2, &3){body_1 &1 body_2 &2}ABC$MACRO(X, Y, Z)DEF";
+    std::string correct = "ABCbody_1 X body_2 YDEF";
     std::string output = mg.process(input);
     if (strcmp(output.c_str(), correct.c_str()) != 0)
     {
-        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with ill-called macro.";
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with a correctly called macro.";
+        errorMessages_.push(message);   
+    }
+}
+
+void TestModule::testMacroGeneratorIncorrectMacroDefinition()
+{
+    MacroGenerator mg;
+    std::string input = "ABC#MACRO(&1, &2, &3,DEF GHI";
+    std::string correct = "ABC";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with an incorrectly defined macro.";
+        errorMessages_.push(message);   
+    }
+}
+
+void TestModule::testMacroGeneratorIncorrectMacroCall()
+{
+    MacroGenerator mg;
+    std::string input = "#MACRO(&1, &2, &3){body_1 &1 body_2 &2}ABC$MACROX, Y, Z)DEF";
+    std::string correct = "ABCDEF";
+    std::string output = mg.process(input);
+    if (strcmp(output.c_str(), correct.c_str()) != 0)
+    {
+        std::string message = "Failure in MacroGenerator::process(): Wrong output of macrogenerator's result with an incorrectly called macro.";
         errorMessages_.push(message);   
     }
 }

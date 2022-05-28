@@ -77,10 +77,14 @@ std::pair<int, std::string> MacroLibrary::call(const std::string& macroName, con
                 result.append(macroName);
             else                
                 result.append(processedParams[parameterNumber - 1]);
-        } 
+        }
         result.push_back(md.body[i]);    
     }
     
+    /* Getting rid of the null termination character */
+    if (result.back() == '\0')
+        result.pop_back();
+
     return { 0, result };    
 }
 
