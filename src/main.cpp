@@ -5,7 +5,7 @@
 #include "TestModule.h"
 
 /* Comment this line to disable tests */
-#define RUN_TESTS
+// #define RUN_TESTS
 
 int main(int argc, char* argv[])
 {

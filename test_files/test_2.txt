@@ -1,0 +1,1 @@
+#MACRO(&1, &2, &3, &4){body &1 body &2}ABC$MACRO(X, Y, Z)EFG

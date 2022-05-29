@@ -60,15 +60,18 @@ std::pair<int, std::string> MacroLibrary::call(const std::string& macroName, con
     
     /* Constructing the result of the macro call */   
     std::string result;
-    for ( std::size_t i = 0; i < md.body.size(); ++i )
+    std::size_t i = 0;
+    while (i < md.body.size())
     {
         if ( md.body[i] == '&' )
         {
             /* Obtaining the parameter number */
             std::string parameterNumberStr = "";
             ++i;
-            while ( i < md.body.size() && std::isdigit(md.body[i]) )
+            while (i < md.body.size())
             {
+                if (!std::isdigit(md.body[i]))
+                    break;
                 parameterNumberStr.push_back(md.body[i]);
                 ++i;
             }
@@ -77,8 +80,10 @@ std::pair<int, std::string> MacroLibrary::call(const std::string& macroName, con
                 result.append(macroName);
             else                
                 result.append(processedParams[parameterNumber - 1]);
+            continue;
         }
-        result.push_back(md.body[i]);    
+        result.push_back(md.body[i]);
+        ++i;    
     }
     
     /* Getting rid of the null termination character */

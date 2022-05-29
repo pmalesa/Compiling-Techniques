@@ -1,0 +1,1 @@
+#MACRO(&1, &2, &3, &4){&1&2}$MACRO(A, A, A, A)$MACRO(B, B, B, B)

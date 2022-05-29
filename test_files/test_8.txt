@@ -1,0 +1,5 @@
+ABC#MACRO_1(&1, &2, &3){xxx &1 yyy &2}DEF
+#MACRO_2(&1, &2, &3){zzz &1 www &2}GHI<$MACRO_1(A, B, C)>
+JKL<$MACRO_2(A, B, C, D, E)>MNO
+#MACRO_1(&1, &2, &3, &4){aaa &1 bbb &2 ccc &3}QPR
+<$MACRO_1(Z, Z, Z, Z)>STU

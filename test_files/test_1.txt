@@ -1,0 +1,1 @@
+#MACRO_2(&1, &2, &3)ABC$MACRO(X, Y, Z)EFG
