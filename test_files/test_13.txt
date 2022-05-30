@@ -1,0 +1,5 @@
+BEGIN#MACRO(&1, &2, &3){&1&2&3}
+AAA $MACRO(B, B, B)
+CCC $MACRO(D, D, D)
+$MACRO(A, B, C)$MACRO(D, E, F)$MACRO(G, H, I)
+END

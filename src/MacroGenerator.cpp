@@ -214,27 +214,36 @@ void MacroGenerator::processMacroDefinition(const std::string& contents, size_t&
     ++j;
 
     /* Obtaining the body of the macro */
+    int brackets = 1; // Opening bracket found (increment on opening brackets, decrement on closing brackets; always >= 0)
+    bool nestedMacroDefinition = false;
     while (j < contents.size())
     {
+        if (contents[j] == '#')
+            nestedMacroDefinition = true;
+        else if (contents[j] == '}')
+            --brackets;
+        else if (contents[j] == '{')
+            ++brackets;
+
         if (j == contents.size() - 1 && contents[j] != '}')
         {
             std::string message = "[ERROR] Found macro definition with incorrectly defined body at position " + std::to_string(initial - 1) + ".";
             std::cout << message << "\n";
             appendToLogFile(message);
+            i = j;
             skipUntilClosingBracketOrEOF(contents, i);
             return;
         }
 
-        if (contents[j] != '}')
-        {
-            body.push_back(contents[j]);
-            ++j;
-        }
-        else
+        if ((nestedMacroDefinition == true && brackets == 0) ||
+            (nestedMacroDefinition == false && contents[j] == '}'))
         {
             ++j;
             break;
         }
+
+        body.push_back(contents[j]);
+        ++j;
     }
 
     /* Update the main index */
